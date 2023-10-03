@@ -2,7 +2,7 @@ import { useState } from 'react';
 import io from 'socket.io-client'
 import { useEffect } from 'react';
 
-const socketio = io.connect('https://hack-socket-etst.vercel.app');
+const socketio = io.connect('https://testsocket-4vkm.onrender.com');
 
 const Lobby = () => {
 
