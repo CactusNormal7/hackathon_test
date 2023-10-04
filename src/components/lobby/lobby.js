@@ -11,7 +11,7 @@ import { useEffect } from 'react';
  
 
 // const socketio  = io.connect('http://localhost:3001');
-const socketio  = io.connect('https://testsocket-4vkm.onrender.com/');
+const socketio  = io.connect('https://testsocket-4vkm.onrender.com');
 
 const Lobby = () => {
 
