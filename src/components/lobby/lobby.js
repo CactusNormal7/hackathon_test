@@ -1,6 +1,5 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import io from 'socket.io-client'
-import { useEffect } from 'react';
 
 //        __                            
 //  ____ |__| ____   ____   _____  ____ 
@@ -16,66 +15,44 @@ const socketio = io.connect('http://localhost:3001');
 
 
 const Lobby = () => {
-    const [allMsgTable, setAllMsgTable] = useState({})
-    const [inputValue, setInputValue] = useState("")
-    const [username, setUsername] = useState("")
-    const [users, setUsers] = useState([])
+    // const [allMsgTable, setAllMsgTable] = useState({})
+    const [messageInputValue, setMessageInputValue] = useState("")
+    const [roomInput, setRoomInput] = useState("")
 
 
     useEffect(() => {
-        let room = window.location.pathname.substring(1);
-        socketio.emit("room_number", { room: room })
+        socketio.on('console_message', (message) => {
+            console.log(message);
+        })
+        socketio.on('chat_message_received', (data) => {
+            console.log(`${data.username} : ${data.message}`);
+        })
     }, [])
 
-
     const sendMessage = () => {
-        socketio.emit("send_message", { message: inputValue, username: username })
+        socketio.emit('chat_message', {message : messageInputValue, username : 'user'})
     }
 
     const handleInputChange = (event) => {
-        setInputValue(event.target.value);
+        setMessageInputValue(event.target.value);
     };
 
-    const joinTriggered = async (e) => {
-        new Promise((resolve, reject) => {
-            const username = prompt("username");
-            if (username) {
-                resolve(username);
-            } else {
-                reject(new Error("Username cannot be empty"));
-            }
-        })
-            .then((username) => {
-                setUsername(username);
-                socketio.emit("joined_username", username);
-            })
-            .catch((error) => {
-                console.error(error);
-            });
+    const joinTriggered = (e) => {
     }
-
-    useEffect(() => {
-        socketio.on('receive_message', (data) => {
-            let updtval = { [data.username]: data.message }
-            setAllMsgTable(allMsgTable => ({ ...allMsgTable, ...updtval }))
-        })
-        socketio.on('user_list', (user_list) => {
-            setUsers(user_list)
-            console.log(users);
-        })
-    }, [socketio])
 
     return (
         <div>
-            <input placeholder='username' onChange={handleInputChange} value={inputValue}></input>
+            <input placeholder='username'></input>
+            <input placeholder='room' onChange={(e) => { setRoomInput(e.target.value) }}></input>
+            <input placeholder='message' onChange={handleInputChange} value={messageInputValue}></input>
             <button onClick={sendMessage}>send</button>
             <button onClick={joinTriggered}>join</button>
-            {users.map((item) => (
+            {/* {users.map((item) => (
                 <h1 key={item}>{item}</h1>
             ))}
             {Object.keys(allMsgTable).map((key) => (
                 <h1 key={key}>{key} : {allMsgTable[key]}</h1>
-            ))}
+            ))} */}
         </div>
     );
 }
