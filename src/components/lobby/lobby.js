@@ -6,7 +6,7 @@ import Chatmsg from '../chatMessage/chatmsg'
 import Ytbplayer from '../ytbplayer/ytbplayer';
 import YouTube from 'react-youtube';
 
-
+//feat quentin le ↓
 //         __                            
 //  ____ |__| ____   ____   _____  ____ 
 // /    \|  |/ ___\ / ___\_/ __ \_  __ \
@@ -26,7 +26,8 @@ const Lobby = () => {
     const [chatInputValue, setChatInputValue] = useState("")
     const [chatMessages, setChatMessages] = useState([])
     const [isGameStarted, setIsGameStarted] = useState(false)
-    const [songsToGuess, setSongsToGuess] = useState(false)
+    const [songsToGuess, setSongsToGuess] = useState([])
+    const [actualSong, setActualSong] = useState([])
 
     const [allUsers, setAllUsers] = useState([])
 
@@ -37,6 +38,30 @@ const Lobby = () => {
 
     const onStart = () => {
         socketio.emit("on_start")
+    }
+
+
+    const gameLoop = (data) => {
+        setSongsToGuess(data)
+        console.log(data);
+        let i = 0
+        while (i !== 5) {
+            setTimeout(() => {
+                // console.log(data);
+                // let url = ((data[0].track).split('?')[1]).split("&");
+                // let videoId = null
+                // url.forEach(parametre => {
+                //     const [cle, valeur] = parametre.split('=');
+                //     if (cle === "v") {
+                //         videoId = valeur;
+                //         return;
+                //     }
+                // });
+                // document.getElementById('testtrack').innerText = `${videoId} + ${i}`
+                console.log("test");
+                i++
+            }, 1000);
+        }
     }
 
     useEffect(() => {
@@ -51,9 +76,8 @@ const Lobby = () => {
         })
 
         socketio.on('game_started', (data) => {
-            console.log(data);
             setIsGameStarted(true)
-            setSongsToGuess(data)
+            gameLoop(data);
         })
 
         socketio.on('chat_message_received', async (data) => {
@@ -94,8 +118,15 @@ const Lobby = () => {
                     </div>
                     <div id='midmidside'>
                         <button onClick={onStart}>START</button>
-                        
-                        <YouTube videoId='https://www.youtube.com/watch?v=6WrVXWgn094'></YouTube>
+                        <h1 id='testtrack'>
+
+                        </h1>
+                        {/* <iframe
+                            width={300}
+                            height={300}
+                            src={`https://www.youtube.com/embed/nwKDhfAnu2M?start=10&end=30&autoplay=1`}
+                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                        ></iframe> */}
                     </div>
                     <div id='midbotside'>
                         <input id='messageinput' placeholder='message' onChange={handleInputChange} value={messageInputValue}></input>
