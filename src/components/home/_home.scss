@@ -1,3 +1,22 @@
 h1 {
     color: red;
 }
+
+#userForm {
+    display: flex;
+    width: 32%;
+    height: 40%;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center ;
+    gap: 10px;
+    background-color: gray;
+}
+
+#wrapperall {
+    width: 100vw;
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
