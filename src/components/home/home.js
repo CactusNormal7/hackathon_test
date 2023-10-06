@@ -10,14 +10,24 @@ import volumeup from './volumeup.png';
 import {Link} from 'react-router-dom'
 
 const Home = () => {
-    const [pseudo, setPseudo] = useState('');
-    const [room, setRoom] = useState('');
+
     const audioRef = useRef(null);
     const [volume, setVolume] = useState(0.5);
     const [isPlaying, setIsPlaying] = useState(false);
     const [isMuted, setIsMuted] = useState(false);
 
     const handleStartGame = () => {
+    };
+
+    const [room, setRoom] = useState("")
+    const [username, setUsername] = useState("")
+
+
+    const roomInputChange = (event) => {
+        setRoom(event.target.value);
+    };
+    const usernameInputChange = (event) => {
+        setUsername(event.target.value);
     };
 
     const handleClick = () => {
@@ -150,8 +160,8 @@ const Home = () => {
                         type="text"
                         id="pseudo"
                         placeholder="Entrez votre pseudo"
-                        value={pseudo}
-                        onChange={(e) => setPseudo(e.target.value)}
+                        value={username}
+                        onChange={(e) => {setUsername(e.target.value)}}
                     />
                 </div>
                 <div className="input-container">
