@@ -3,8 +3,6 @@ import io from 'socket.io-client'
 import { useLocation } from 'react-router-dom'
 import Userbanner from '../userbanner/userbanner'
 import Chatmsg from '../chatMessage/chatmsg'
-import Ytbplayer from '../ytbplayer/ytbplayer';
-import YouTube from 'react-youtube';
 
 //feat quentin le ↓
 //         __                            
@@ -28,6 +26,9 @@ const Lobby = () => {
     const [isGameStarted, setIsGameStarted] = useState(false)
     const [songsToGuess, setSongsToGuess] = useState([])
     const [actualSong, setActualSong] = useState([])
+    const [allScore, setAllScore] = useState([])
+    const [i, setI] = useState(0)
+    // const [answered, setAnswered] = useState(false)
 
     const [allUsers, setAllUsers] = useState([])
 
@@ -35,6 +36,9 @@ const Lobby = () => {
     const searchParams = new URLSearchParams(location.search)
     const room = searchParams.get('room')
     const username = searchParams.get('username')
+    let score = 0
+    let alsco = []
+
 
     const onStart = () => {
         socketio.emit("on_start")
@@ -45,23 +49,46 @@ const Lobby = () => {
         setSongsToGuess(data)
         console.log(data);
         let i = 0
-        while (i !== 5) {
-            setTimeout(() => {
-                // console.log(data);
-                // let url = ((data[0].track).split('?')[1]).split("&");
-                // let videoId = null
-                // url.forEach(parametre => {
-                //     const [cle, valeur] = parametre.split('=');
-                //     if (cle === "v") {
-                //         videoId = valeur;
-                //         return;
-                //     }
-                // });
-                // document.getElementById('testtrack').innerText = `${videoId} + ${i}`
-                console.log("test");
+        let answereed = false
+        const nextIteration = () => {
+            answereed = false
+            if (i < 5) {
+                document.querySelector(`.${username}`).style.backgroundColor = "gray"
+                let url = ((data[i].track).split('?')[1]).split("&");
+                let videoId = null
+                url.forEach(parametre => {
+                    const [cle, valeur] = parametre.split('=');
+                    if (cle === "v") {
+                        videoId = valeur;
+                        return;
+                    }
+                });
+                setActualSong(`https://www.youtube.com/embed/${videoId}?start=25&end=40&autoplay=1`)
                 i++
-            }, 1000);
+                setI(i)
+                setTimeout(nextIteration, 15000)
+            }
         }
+        socketio.on('answer_message_received', (values) => {
+            if (!answereed) {
+                if (values.message === data[i - 1].title) {
+                    console.log("true");
+                    document.querySelector(`.${values.username}`).style.backgroundColor = "green"
+                    answereed = true
+                    const index = alsco.findIndex((object) => object.username === values.username)
+                    alsco[index].score += 1
+                    setAllScore(alsco)
+                } else {
+                    console.log(data[i - 1].title);
+                    console.log("false");
+                }
+            } else {
+
+                console.log("already answered");
+            }
+        })
+        nextIteration();
+
     }
 
     useEffect(() => {
@@ -72,12 +99,23 @@ const Lobby = () => {
         })
 
         socketio.on('users_infos', (data) => {
+            let temp = data.users
+            const newTab = temp.map((item) => ({
+                ...item,
+                score: 0,
+            }));
+            setAllScore(newTab)
+            alsco = newTab
             setAllUsers(data.users)
         })
 
         socketio.on('game_started', (data) => {
             setIsGameStarted(true)
             gameLoop(data);
+        })
+
+        socketio.on('send_score', (d) => {
+            setAllScore(allScore => ({ ...allScore, ...{ [d.username]: d.score } }))
         })
 
         socketio.on('chat_message_received', async (data) => {
@@ -90,12 +128,14 @@ const Lobby = () => {
         })
     }, [])
 
-    const sendMessage = (e) => {
+    const sendMessage = () => {
         socketio.emit('chat_message', { username: username, message: chatInputValue })
+        setChatInputValue('')
     }
 
     const sendAnswer = () => {
-        socketio.emit('answer_message', { message: messageInputValue })
+        socketio.emit('answer_message', { message: messageInputValue, score: score })
+        setMessageInputValue('')
     }
 
     const handleInputChange = (event) => {
@@ -103,6 +143,7 @@ const Lobby = () => {
     };
 
     const handleChatChange = (event) => {
+
         setChatInputValue(event.target.value);
     }
 
@@ -117,19 +158,24 @@ const Lobby = () => {
                         </div>
                     </div>
                     <div id='midmidside'>
-                        <button onClick={onStart}>START</button>
+                        {!isGameStarted &&
+                            <button id='startButton' onClick={onStart}>START</button>
+                        }
+                        {isGameStarted &&
+                            <h1>{i}</h1>
+                        }
                         <h1 id='testtrack'>
 
                         </h1>
-                        {/* <iframe
-                            width={300}
-                            height={300}
-                            src={`https://www.youtube.com/embed/nwKDhfAnu2M?start=10&end=30&autoplay=1`}
+                        <iframe
+                            width={0}
+                            height={0}
+                            src={actualSong}
                             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                        ></iframe> */}
+                        ></iframe>
                     </div>
                     <div id='midbotside'>
-                        <input id='messageinput' placeholder='message' onChange={handleInputChange} value={messageInputValue}></input>
+                        <input id='messageinput' placeholder='message' onKeyDown={(e) => { if (e.key === 'Enter') { sendAnswer() } }} onChange={handleInputChange} value={messageInputValue}></input>
                         <button id='sendButton' onClick={sendAnswer}>send</button>
                     </div>
                 </div>
@@ -139,15 +185,19 @@ const Lobby = () => {
                         {
                             allUsers.map(function (values) {
                                 return (
-                                    <Userbanner username={values.username} message={allMsgTable[values.username]} />
+                                    <Userbanner iid={values.username} username={values.username} message={allMsgTable[values.username]} score={allScore[allScore.findIndex((object) => object.username === values.username)].score} />
                                 )
                             })
                         }
                     </div>
                     <div id='chatpart'>
-                        {chatMessages}
-                        <input value={chatInputValue} onChange={handleChatChange} placeholder='send a message'></input>
-                        <button onClick={sendMessage}>send</button>
+                        <div id='chatMessageWrapper'>
+                            {chatMessages}
+                        </div>
+                        <div id='chatinputsection' >
+                            <input value={chatInputValue} onKeyDown={(e) => { if (e.key === 'Enter') { sendMessage() } }} onChange={handleChatChange} placeholder='send a message'></input>
+                            <button onClick={sendMessage}>send</button>
+                        </div>
                     </div>
                 </div>
             </div>

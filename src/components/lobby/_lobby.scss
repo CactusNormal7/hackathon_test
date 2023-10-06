@@ -51,6 +51,9 @@
     #midmidside {
         background-color: #F0F0F0;
         border-radius: 20px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
         width: 90%;
         margin-left: 5%;
         height: 65%;
@@ -119,7 +122,25 @@
     width: 90%;
     margin-top: 3vh;
     border-radius: 10px;
+    display: flex;
+    position: relative;
+    align-items: center;
+    flex-direction: column;
     background-color: lightgray;
+
+    #chatMessageWrapper {
+        width: 90%;
+    }
+    #chatinputsection {
+        position: absolute;
+        display: flex;
+        justify-content: center;
+        bottom: 10px;
+
+        input {
+            width: 60%;
+        }
+    }
 }
 
 #userlisttittle {
@@ -130,4 +151,29 @@
 
 #userlistpart::-webkit-scrollbar {
     display: none;
+}
+
+#coucou {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+}
+
+#startButton {
+    width: 25%;
+    height: 10%;
+    border-radius: 10px;
+    border: 0px solid;
+    padding: 5px;
+    background-color: #FFFFFF;
+    font-family: 'Roboto', sans-serif;
+    font-weight: bolder;
+    font-size: 20px;
+}
+
+h1 {
+    font-size: 30px;
+    font-family: 'Roboto', sans-serif;
+    font-weight: bolder;
 }
